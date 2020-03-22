@@ -31,6 +31,47 @@ def main():
         # 種族値
         pprint.pprint(extract_base_stats(page_text, poke_generation))
 
+        # 進化
+        pprint.pprint(extract_evolution(page_text))
+
+def extract_evolution(page_text):
+    pokedex_evolution_data_list = []
+    pokedex_evolution_raw_text = re.search(r"==\s*進化\s*==(.|\s)*?==", page_text).group()
+
+    for row in pokedex_evolution_raw_text.split("\n"):
+        tmp_dic = {}
+        # 先頭のアスタリスクで階層の深さを判断する
+        if "****" in row:
+            tmp_dic['level'] = 4
+        elif "***"  in row:
+            tmp_dic['level'] = 3
+        elif "**"  in row:
+            tmp_dic['level'] = 2
+        elif "*"  in row:
+            tmp_dic['level'] = 1
+        else:
+            continue
+
+        # リンク先記事とリンクテキストを分けている部分を除去する
+        # e.g. [[XXXX|YYYY]]
+        link_list = re.findall(r"\[\[(?!\|)(.*?)\]\]", row)
+        for link in link_list:
+            if "|" in link:
+                replace_text = re.sub(r".*?\|", "", link)
+                row = row.replace(link, replace_text)
+        replaced_row = re.sub(r"\[\[(.*?)\]\]", r"\1", row)
+
+        # 先頭のアスタリスクを除去する
+        replaced_row = re.sub(r"\*+?\s*", "", replaced_row)
+
+        # ボールドを除去する
+        replaced_row = replaced_row.replace("\'\'\'", "")
+
+        tmp_dic['text'] = replaced_row
+        pokedex_evolution_data_list.append(tmp_dic)
+        
+    return pokedex_evolution_data_list
+
 def check_poke_generation(national_pokedex_num: int):
     # gen1 (#1-151)
     # gen2 (#152-251)
