@@ -77,38 +77,35 @@ def extract_base_stats(page_text, poke_generation):
             'Speed' : r"\| すばやさ=(\d*)"
     }
 
-    pokedex_base_stats_raw_text = re.search(r"== 種族値 ==(.|\s)*?== ダメージ倍率 ==", page_text).group()
-    
-    if poke_generation == "gen1":
-        pokedex_base_stats_gen1_text = re.search(r"(\'\'\'|===)\s*(通常\()?第1世代\)?\s*(\'\'\'|===)\n\{\{古種族値(.|\s)*?\}\}", pokedex_base_stats_raw_text).group()
-        pokedex_base_stats_gen2_text = re.search(r"(\'\'\'|===)\s*(通常\()?第2世代以降\)?\s*(\'\'\'|===)\n\{\{種族値(.|\s)*?\}\}", pokedex_base_stats_raw_text).group()
-        pokedex_base_stats_mega_text_list = re.findall(r"=== (メガ.*?) ===\n(\{\{種族値(.|\s)*?\}\})", pokedex_base_stats_raw_text)
-    elif poke_generation == "gen8":
-        pokedex_base_stats_gen8_text = re.search(r"(\'\'\'|===)\s*第8世代以降\s*(\'\'\'|===)\n\{\{種族値(.|\s)*?\}\}", pokedex_base_stats_raw_text).group()
-
     pokedex_base_stats_list = {}
+    pokedex_base_stats_raw_text = re.search(r"==\s*種族値\s*==(.|\s)*?== ダメージ倍率 ==", page_text).group()
+    pokedex_base_stats_text_list = re.findall(r"(.*)\n(\{\{種族値(.|\s)*?\}\})", pokedex_base_stats_raw_text)
 
-    print(pokedex_base_stats_gen8_text)
+    if pokedex_base_stats_text_list:
+        for pokedex_base_stats_text_key_value in pokedex_base_stats_text_list:
+            tmp_dict = {}
+            key_value_list = list(pokedex_base_stats_text_key_value)
+            for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen2.items() :
+                tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, key_value_list[1])
+            pokedex_base_stats_list[create_base_stats_list_key(key_value_list[0])] = tmp_dict
 
-    # tmp_dict = {}
-    # for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen1.items() :
-    #     tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, pokedex_base_stats_gen1_text)
-    # pokedex_base_stats_list['gen1'] = tmp_dict
-
-    # tmp_dict = {}
-    # for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen2.items() :
-    #     tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, pokedex_base_stats_gen2_text)
-    # pokedex_base_stats_list['gen2'] = tmp_dict
-
-    # if pokedex_base_stats_mega_text_list:
-    #     for pokedex_base_stats_mega_text_key_value in pokedex_base_stats_mega_text_list:
-    #         tmp_dict = {}
-    #         key_value_list = list(pokedex_base_stats_mega_text_key_value)
-    #         for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen2.items() :
-    #             tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, key_value_list[1])
-    #         pokedex_base_stats_list[key_value_list[0]] = tmp_dict
+    if poke_generation == "gen1":
+        tmp_dict = {}
+        pokedex_base_stats_text_list_gen1 = re.search(r"(.*)\n(\{\{古種族値(.|\s)*?\}\})", pokedex_base_stats_raw_text).group()
+        for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen1.items() :
+            tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, pokedex_base_stats_text_list_gen1)
+        pokedex_base_stats_list['第1世代'] = tmp_dict
 
     return pokedex_base_stats_list
+
+def create_base_stats_list_key(key_seed):
+    replaced_key_seed = key_seed.replace("\'\'\'", "").replace("===", "").replace(" ", "").replace("*", "")
+    key = ""
+    if replaced_key_seed == "":
+        key = "第8世代"
+    else:
+        key = replaced_key_seed
+    return key
 
 def get_pokedex_base_stats_from_text(pattern_str, target_text):
     base_stats = ""
