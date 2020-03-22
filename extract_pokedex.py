@@ -15,7 +15,7 @@ def main():
             page_title = page['title']
             print(f"{index} : {page_title}")
 
-        page_text = pages[0]['revision']['text']['#text']
+        page_text = pages[int(args[2])]['revision']['text']['#text']
 
         # ポケモン図鑑基本情報
         pokedex_basic_info = extract_pokedex_basic_info(page_text)
