@@ -15,28 +15,31 @@ def main():
             page_title = page['title']
             print(f"{index} : {page_title}")
 
-        page_text = pages[int(args[2])]['revision']['text']['#text']
-
-        # ポケモン図鑑基本情報
-        pokedex_basic_info = extract_pokedex_basic_info(page_text)
-        pprint.pprint(pokedex_basic_info)
+        for page in pages:
+            page_text = page['revision']['text']['#text']
+            extract_pokedex_data(page_text)
         
-        # 世代
-        poke_generation = check_poke_generation(int(pokedex_basic_info['number']))
-        print(poke_generation)
+def extract_pokedex_data(page_text):
+    # ポケモン図鑑基本情報
+    pokedex_basic_info = extract_pokedex_basic_info(page_text)
+    pprint.pprint(pokedex_basic_info)
+    
+    # 世代
+    poke_generation = check_poke_generation(int(pokedex_basic_info['number']))
+    print(poke_generation)
 
-        # ポケモンずかんの説明文
-        pprint.pprint(extract_pokedex_description(page_text), width=150)
+    # ポケモンずかんの説明文
+    pprint.pprint(extract_pokedex_description(page_text), width=150)
 
-        # 種族値
-        pprint.pprint(extract_base_stats(page_text, poke_generation))
+    # 種族値
+    pprint.pprint(extract_base_stats(page_text, poke_generation))
 
-        # 進化
-        pprint.pprint(extract_evolution(page_text))
+    # 進化
+    pprint.pprint(extract_evolution(page_text))
 
 def extract_evolution(page_text):
     pokedex_evolution_data_list = []
-    pokedex_evolution_raw_text = re.search(r"==\s*進化\s*==(.|\s)*?==", page_text).group()
+    pokedex_evolution_raw_text = re.search(r"==\s*進化(・フォルムチェンジ)?\s*==(.|\s)*?==", page_text).group()
 
     for row in pokedex_evolution_raw_text.split("\n"):
         tmp_dic = {}
