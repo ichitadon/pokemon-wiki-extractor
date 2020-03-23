@@ -19,6 +19,7 @@ def main():
         pprint.pprint(extract_natural_moves(page_text))
         pprint.pprint(extract_machine_moves(page_text))
         pprint.pprint(extract_egg_moves(page_text))
+        pprint.pprint(extract_tutor_moves(page_text))
 
 def extract_natural_moves(page_text: str):
     natural_moves_list = []
@@ -52,6 +53,15 @@ def extract_egg_moves(page_text: str):
                 parents_list.append(dict(ndex=result_list[0], name=result_list[1]))
             egg_moves_list[matched.groups()[1]] = parents_list
     return egg_moves_list
+
+def extract_tutor_moves(page_text: str):
+    tutor_moves_list = []
+    tutor_moves_raw_text = re.search(r"==\s*\[\[わざおしえ人\|人から教えてもらえる\]\]わざ\s*==(.|\s)*?<noinclude>", page_text).group()
+    for row in tutor_moves_raw_text.split("\n"):
+        matched = re.search(r"\{\{learnlist/tutor8\|(.*?)\|", row)
+        if matched != None:
+            tutor_moves_list.append(matched.groups()[0])
+    return tutor_moves_list
 
 if __name__ == '__main__':
     main()
