@@ -143,7 +143,7 @@ def extract_base_stats(page_text, poke_generation):
             key_value_list = list(pokedex_base_stats_text_key_value)
             for pattern_name, pattern_str in pokedex_base_stats_pattern_dict_gen2.items() :
                 tmp_dict[pattern_name] = get_pokedex_base_stats_from_text(pattern_str, key_value_list[1])
-            pokedex_base_stats_list[create_base_stats_list_key(key_value_list[0])] = tmp_dict
+            pokedex_base_stats_list[create_base_stats_list_key(key_value_list[0], poke_generation)] = tmp_dict
 
     if poke_generation == "gen1":
         tmp_dict = {}
@@ -154,11 +154,23 @@ def extract_base_stats(page_text, poke_generation):
 
     return pokedex_base_stats_list
 
-def create_base_stats_list_key(key_seed):
-    replaced_key_seed = key_seed.replace("\'\'\'", "").replace("===", "").replace(" ", "").replace("*", "")
+def create_base_stats_list_key(key_seed, poke_generation):
+    gen_jp_dict = {
+        'gen1' : '第1世代',
+        'gen2' : '第2世代',
+        'gen3' : '第3世代',
+        'gen4' : '第4世代',
+        'gen5' : '第5世代',
+        'gen6' : '第6世代',
+        'gen7' : '第7世代',
+        'gen8' : '第8世代',
+    }
+    replaced_key_seed = key_seed.replace("\'\'\'", "") \
+        .replace("===", "").replace("==", "").replace(" ", "").replace("*", "") \
+        .replace("種族値", "")
     key = ""
     if replaced_key_seed == "":
-        key = "第8世代"
+        key = f"{gen_jp_dict[poke_generation]}以降"
     else:
         key = replaced_key_seed
     return key
