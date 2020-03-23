@@ -33,8 +33,8 @@ def extract_pokedex_data(page_text):
     pprint.pprint(pokedex_basic_info)
     
     # 世代
-    if pokedex_basic_info['number'].isdecimal():
-        poke_generation = check_poke_generation(int(pokedex_basic_info['number']))
+    if pokedex_basic_info['ndex'].isdecimal():
+        poke_generation = check_poke_generation(int(pokedex_basic_info['ndex']))
     else:
         raise PokedexNumberNotFoundError
     print(poke_generation)
