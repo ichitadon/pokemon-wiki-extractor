@@ -19,7 +19,7 @@ def main():
         for page in pages:
             page_text = page['revision']['text']['#text']
             try:
-                extract_pokedex_data(page_text)
+                pprint.pprint(extract_pokedex_data(page_text), width=150)
             except PokedexBasicInfoNotFoundError as e:
                 print(f"Pokedex Basic Info is not found in this page : {page['title']}")
             except PokedexNumberNotFoundError as e:
@@ -28,25 +28,30 @@ def main():
                 print(f"Pokedex Evolution is not found in this page : {page['title']}")
         
 def extract_pokedex_data(page_text):
+    pokedex = {}
+
     # ポケモン図鑑基本情報
-    pokedex_basic_info = extract_pokedex_basic_info(page_text)
-    pprint.pprint(pokedex_basic_info)
+    pokedex['pokedex_basic_info'] = extract_pokedex_basic_info(page_text)
     
     # 世代
-    if pokedex_basic_info['ndex'].isdecimal():
-        poke_generation = check_poke_generation(int(pokedex_basic_info['ndex']))
+    poke_generation = None
+    if pokedex['pokedex_basic_info']['ndex'].isdecimal():
+        poke_generation = check_poke_generation(int(pokedex['pokedex_basic_info']['ndex']))
     else:
         raise PokedexNumberNotFoundError
-    print(poke_generation)
 
     # ポケモンずかんの説明文
-    pprint.pprint(extract_pokedex_description(page_text), width=150)
+    pokedex['pokedex_description'] = extract_pokedex_description(page_text)
 
     # 種族値
-    pprint.pprint(extract_base_stats(page_text, poke_generation))
+    pokedex['base_stats'] = extract_base_stats(page_text, poke_generation)
 
     # 進化
-    pprint.pprint(extract_evolution(page_text))
+    pokedex['evolution'] = extract_evolution(page_text)
+
+    pokedex_root = {}
+    pokedex_root[pokedex['pokedex_basic_info']['name_jp']] = pokedex
+    return pokedex_root
 
 def extract_evolution(page_text):
     pokedex_evolution_data_list = []
