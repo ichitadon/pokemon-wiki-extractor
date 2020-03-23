@@ -17,6 +17,7 @@ def main():
 
         page_text = pages[int(args[2])]['revision']['text']['#text']
         pprint.pprint(extract_natural_moves(page_text))
+        pprint.pprint(extract_machine_moves(page_text))
 
 def extract_natural_moves(page_text: str):
     natural_moves_list = []
@@ -26,6 +27,15 @@ def extract_natural_moves(page_text: str):
         if matched != None:
             natural_moves_list.append(list(matched.groups()))
     return natural_moves_list
+
+def extract_machine_moves(page_text: str):
+    machine_moves_list = []
+    machine_moves_raw_text = re.search(r"==\s*\[\[わざマシン\]\]・\[\[わざレコード\]\]わざ\s*==(.|\s)*?== ", page_text).group()
+    for row in machine_moves_raw_text.split("\n"):
+        matched = re.search(r"\{\{learnlist/tm8\|(.*?)\|(.*?)\|", row)
+        if matched != None:
+            machine_moves_list.append(list(matched.groups()))
+    return machine_moves_list
 
 if __name__ == '__main__':
     main()
