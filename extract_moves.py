@@ -18,6 +18,7 @@ def main():
         page_text = pages[int(args[2])]['revision']['text']['#text']
         pprint.pprint(extract_natural_moves(page_text))
         pprint.pprint(extract_machine_moves(page_text))
+        pprint.pprint(extract_egg_moves(page_text))
 
 def extract_natural_moves(page_text: str):
     natural_moves_list = []
@@ -36,6 +37,21 @@ def extract_machine_moves(page_text: str):
         if matched != None:
             machine_moves_list.append(list(matched.groups()))
     return machine_moves_list
+
+def extract_egg_moves(page_text: str):
+    egg_moves_list = {}
+    egg_moves_raw_text = re.search(r"==\s*\[\[タマゴわざ\]\]\s*==(.|\s)*?== ", page_text).group().replace("<br />", "")
+    for row in egg_moves_raw_text.split("\n"):
+        matched = re.search(r"\{\{learnlist/breed8\|(\{\{MSP\|.+?\}\})\|(.*?)\|", row)
+        if matched != None:
+            parents_list = []
+            parents_raw_text = matched.groups()[0]
+            parents_matched_list = re.findall(r"\{\{MSP\|(\d*?)\|(.*?)\}\}", parents_raw_text)
+            for result_tuple in parents_matched_list:
+                result_list = list(result_tuple)
+                parents_list.append(dict(ndex=result_list[0], name=result_list[1]))
+            egg_moves_list[matched.groups()[1]] = parents_list
+    return egg_moves_list
 
 if __name__ == '__main__':
     main()
