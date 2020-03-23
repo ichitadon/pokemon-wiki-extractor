@@ -6,3 +6,6 @@ class PokedexBasicInfoNotFoundError(PokemonWikiExtractorError):
 
 class PokedexDescriptionNotFoundError(PokemonWikiExtractorError):
     pass
+
+class PokedexNumberNotFoundError(PokemonWikiExtractorError):
+    pass

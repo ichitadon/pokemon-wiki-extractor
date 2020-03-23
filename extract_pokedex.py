@@ -2,7 +2,7 @@ import xmltodict
 import re
 import pprint
 import sys
-from pokemon_wiki_extractor_exception import PokedexBasicInfoNotFoundError
+from pokemon_wiki_extractor_exception import PokedexBasicInfoNotFoundError, PokedexNumberNotFoundError
 
 def main():
     args = sys.argv
@@ -22,6 +22,8 @@ def main():
                 extract_pokedex_data(page_text)
             except PokedexBasicInfoNotFoundError as e:
                 print(f"Pokedex Basic Info is not found in this page : {page['title']}")
+            except PokedexNumberNotFoundError as e:
+                print(f"Pokedex Number is not found in this page : {page['title']}")
         
 def extract_pokedex_data(page_text):
     # ポケモン図鑑基本情報
@@ -29,7 +31,10 @@ def extract_pokedex_data(page_text):
     pprint.pprint(pokedex_basic_info)
     
     # 世代
-    poke_generation = check_poke_generation(int(pokedex_basic_info['number']))
+    if pokedex_basic_info['number'].isdecimal():
+        poke_generation = check_poke_generation(int(pokedex_basic_info['number']))
+    else:
+        raise PokedexNumberNotFoundError
     print(poke_generation)
 
     # ポケモンずかんの説明文
@@ -105,6 +110,9 @@ def check_poke_generation(national_pokedex_num: int):
         poke_generation = "gen7"
     elif national_pokedex_num >= 810 and national_pokedex_num <= 890:
         poke_generation = "gen8"
+    else:
+        raise PokedexNumberNotFoundError
+
     return poke_generation
 
 def extract_base_stats(page_text, poke_generation):
