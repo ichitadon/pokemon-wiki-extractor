@@ -2,7 +2,7 @@ import xmltodict
 import re
 import pprint
 import sys
-from pokemon_wiki_extractor_exception import PokedexBasicInfoNotFoundError, PokedexNumberNotFoundError
+from pokemon_wiki_extractor_exception import *
 
 def main():
     args = sys.argv
@@ -24,6 +24,8 @@ def main():
                 print(f"Pokedex Basic Info is not found in this page : {page['title']}")
             except PokedexNumberNotFoundError as e:
                 print(f"Pokedex Number is not found in this page : {page['title']}")
+            except PokedexEvolutionNotFoundError as e:
+                print(f"Pokedex Evolution is not found in this page : {page['title']}")
         
 def extract_pokedex_data(page_text):
     # ポケモン図鑑基本情報
@@ -48,7 +50,10 @@ def extract_pokedex_data(page_text):
 
 def extract_evolution(page_text):
     pokedex_evolution_data_list = []
-    pokedex_evolution_raw_text = re.search(r"==\s*進化(・フォルムチェンジ)?\s*==(.|\s)*?==", page_text).group()
+    try:
+        pokedex_evolution_raw_text = re.search(r"==\s*進化(・フォルムチェンジ)?\s*==(.|\s)*?==", page_text).group()
+    except AttributeError:
+        raise PokedexEvolutionNotFoundError
 
     for row in pokedex_evolution_raw_text.split("\n"):
         tmp_dic = {}

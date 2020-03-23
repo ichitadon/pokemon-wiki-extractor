@@ -9,3 +9,6 @@ class PokedexDescriptionNotFoundError(PokemonWikiExtractorError):
 
 class PokedexNumberNotFoundError(PokemonWikiExtractorError):
     pass
+
+class PokedexEvolutionNotFoundError(PokemonWikiExtractorError):
+    pass
