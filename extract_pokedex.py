@@ -2,7 +2,7 @@ import xmltodict
 import re
 import pprint
 import sys
-from pokemon_wiki_extractor_exception import *
+from pokemon_wiki_extractor_exception import PokedexBasicInfoNotFoundError, PokedexNumberNotFoundError, PokedexEvolutionNotFoundError
 
 def main():
     args = sys.argv
@@ -20,11 +20,11 @@ def main():
             page_text = page['revision']['text']['#text']
             try:
                 pprint.pprint(extract_pokedex_data(page_text), width=150)
-            except PokedexBasicInfoNotFoundError as e:
+            except PokedexBasicInfoNotFoundError:
                 print(f"Pokedex Basic Info is not found in this page : {page['title']}")
-            except PokedexNumberNotFoundError as e:
+            except PokedexNumberNotFoundError:
                 print(f"Pokedex Number is not found in this page : {page['title']}")
-            except PokedexEvolutionNotFoundError as e:
+            except PokedexEvolutionNotFoundError:
                 print(f"Pokedex Evolution is not found in this page : {page['title']}")
         
 def extract_pokedex_data(page_text):
