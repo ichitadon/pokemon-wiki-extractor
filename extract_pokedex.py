@@ -2,6 +2,7 @@ import xmltodict
 import re
 import pprint
 import sys
+from pokemon_wiki_extractor_exception import PokedexBasicInfoNotFoundError
 
 def main():
     args = sys.argv
@@ -17,7 +18,10 @@ def main():
 
         for page in pages:
             page_text = page['revision']['text']['#text']
-            extract_pokedex_data(page_text)
+            try:
+                extract_pokedex_data(page_text)
+            except PokedexBasicInfoNotFoundError as e:
+                print(f"Pokedex Basic Info is not found in this page : {page['title']}")
         
 def extract_pokedex_data(page_text):
     # ポケモン図鑑基本情報
@@ -241,7 +245,10 @@ def extract_pokedex_description(page_text: str):
     return pokedex_description
 
 def extract_pokedex_basic_info(page_text):
-    pokedex_basic_info_raw_text = re.search(r"\{\{ポケモン図鑑基本情報(.|\s)*?\}\}", page_text).group()
+    try:
+        pokedex_basic_info_raw_text = re.search(r"\{\{ポケモン図鑑基本情報(.|\s)*?\}\}", page_text).group()
+    except AttributeError:
+        raise PokedexBasicInfoNotFoundError
     pokedex_basic_info_pattern_dict = {
         'name_jp' : r"\|\s*名=(.*)\n",
         'tmromaji' : r"\|\s*tmromaji=(.*)\n",
