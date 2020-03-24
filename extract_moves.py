@@ -15,19 +15,29 @@ def main():
             page_title = page['title']
             print(f"{index} : {page_title}")
 
+        page_name = pages[int(args[2])]['title']
         page_text = pages[int(args[2])]['revision']['text']['#text']
-        pprint.pprint(extract_natural_moves(page_text))
-        pprint.pprint(extract_machine_moves(page_text))
-        pprint.pprint(extract_egg_moves(page_text))
-        pprint.pprint(extract_tutor_moves(page_text))
+        pprint.pprint(extract_natural_moves(page_text, page_name))
+        # pprint.pprint(extract_machine_moves(page_text))
+        # pprint.pprint(extract_egg_moves(page_text))
+        # pprint.pprint(extract_tutor_moves(page_text))
 
-def extract_natural_moves(page_text: str):
-    natural_moves_list = []
-    natural_moves_raw_text = re.search(r"==\s*レベルアップわざ\s*==(.|\s)*?== ", page_text).group()
-    for row in natural_moves_raw_text.split("\n"):
-        matched = re.search(r"\{\{learnlist/level8\|(\d*?)\|(.*?)\|", row)
-        if matched != None:
-            natural_moves_list.append(list(matched.groups()))
+def extract_natural_moves(page_text: str, page_name: str):
+    natural_moves_list = {}
+    natural_moves_raw_text = re.search(r"==\s*レベルアップわざ\s*==(.|\s)*?==\s*\[\[わざマシン\]\]・\[\[わざレコード\]\]わざ", page_text).group()
+    # フォームが存在する場合は抽出のための印 `##` を付与する
+    natural_moves_raw_text = re.sub(r"\n==", r"\n##==", natural_moves_raw_text)
+    # 付与した `##` を手掛かりにフォームを抽出する
+    natural_moves_text_list = re.findall(r"====\s*(.*)?\s*====((.|\s)*?)##", natural_moves_raw_text)
+    if len(natural_moves_text_list) == 0:
+        natural_moves_text_list.append([page_name.replace("/第八世代のおぼえるわざ", ""), natural_moves_raw_text])
+    for search_result_tuple in natural_moves_text_list:
+        tmp_list = []
+        for row in search_result_tuple[1].split("\n"):
+            matched = re.search(r"\{\{learnlist/level8\|(\d*?)\|(.*?)\|", row)
+            if matched != None:
+                tmp_list.append(list(matched.groups()))
+        natural_moves_list[search_result_tuple[0]] = tmp_list
     return natural_moves_list
 
 def extract_machine_moves(page_text: str):
