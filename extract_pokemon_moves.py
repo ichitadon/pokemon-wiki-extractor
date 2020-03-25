@@ -19,7 +19,7 @@ def main():
         page_text = pages[int(args[2])]['revision']['text']['#text']
         pprint.pprint(extract_natural_moves(page_text, page_name))
         pprint.pprint(extract_machine_moves(page_text, page_name))
-        # pprint.pprint(extract_egg_moves(page_text))
+        pprint.pprint(extract_egg_moves(page_text, page_name))
         # pprint.pprint(extract_tutor_moves(page_text))
 
 def extract_natural_moves(page_text: str, page_name: str):
@@ -58,19 +58,28 @@ def extract_machine_moves(page_text: str, page_name: str):
         machine_moves_list[search_result_tuple[0]] = tmp_list
     return machine_moves_list
 
-def extract_egg_moves(page_text: str):
+def extract_egg_moves(page_text: str, page_name: str):
     egg_moves_list = {}
-    egg_moves_raw_text = re.search(r"==\s*\[\[タマゴわざ\]\]\s*==(.|\s)*?== ", page_text).group().replace("<br />", "")
-    for row in egg_moves_raw_text.split("\n"):
-        matched = re.search(r"\{\{learnlist/breed8\|(\{\{MSP\|.+?\}\})\|(.*?)\|", row)
-        if matched != None:
-            parents_list = []
-            parents_raw_text = matched.groups()[0]
-            parents_matched_list = re.findall(r"\{\{MSP\|(\d*?)\|(.*?)\}\}", parents_raw_text)
-            for result_tuple in parents_matched_list:
-                result_list = list(result_tuple)
-                parents_list.append(dict(ndex=result_list[0], name=result_list[1]))
-            egg_moves_list[matched.groups()[1]] = parents_list
+    egg_moves_raw_text = re.search(r"==\s*\[\[タマゴわざ\]\]\s*==(.|\s)*?==\s*\[\[わざおしえ人", page_text).group().replace("<br />", "")
+    # 各フォーム抽出のための印 `##` を付与する
+    egg_moves_raw_text = re.sub(r"\n==", r"\n##==", egg_moves_raw_text)
+    # 付与した `##` を手掛かりにフォームを抽出する
+    egg_moves_text_list = re.findall(r"====\s*(.*)?\s*====((.|\s)*?)##", egg_moves_raw_text)
+    if len(egg_moves_text_list) == 0:
+        egg_moves_text_list.append([page_name.replace("/第八世代のおぼえるわざ", ""), egg_moves_raw_text])
+    for search_result_tuple in egg_moves_text_list:
+        tmp_list = {}
+        for row in search_result_tuple[1].split("\n"):
+            matched = re.search(r"\{\{learnlist/breed8\|(\{\{MSP\|.+?\}\})\|(.*?)\|", row)
+            if matched != None:
+                parents_list = []
+                parents_raw_text = matched.groups()[0]
+                parents_matched_list = re.findall(r"\{\{MSP\|(\d*?)\|(.*?)\}\}", parents_raw_text)
+                for result_tuple in parents_matched_list:
+                    result_list = list(result_tuple)
+                    parents_list.append(dict(ndex=result_list[0], name=result_list[1]))
+                tmp_list[matched.groups()[1]] = parents_list
+        egg_moves_list[search_result_tuple[0]] = tmp_list
     return egg_moves_list
 
 def extract_tutor_moves(page_text: str):
