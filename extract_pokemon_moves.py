@@ -1,6 +1,6 @@
 import xmltodict
 import re
-import pprint
+from pprint import pprint
 import sys
 
 def main():
@@ -15,12 +15,27 @@ def main():
             page_title = page['title']
             print(f"{index} : {page_title}")
 
-        page_name = pages[int(args[2])]['title']
-        page_text = pages[int(args[2])]['revision']['text']['#text']
-        pprint.pprint(extract_natural_moves(page_text, page_name))
-        pprint.pprint(extract_machine_moves(page_text, page_name))
-        pprint.pprint(extract_egg_moves(page_text, page_name))
-        pprint.pprint(extract_tutor_moves(page_text, page_name))
+            page_name = page['title']
+            page_text = page['revision']['text']['#text']
+            pprint(extract_8gen_pokemon_moves(page_text, page_name), width=150)
+
+def extract_8gen_pokemon_moves(page_text: str, page_name: str):
+    pokemon_move = {}
+
+    # レベルアップわざ
+    pokemon_move['natural_moves'] = extract_natural_moves(page_text, page_name)
+    
+    # わざマシン・わざレコードわざ
+    pokemon_move['machine_moves'] = extract_machine_moves(page_text, page_name)
+    
+    # タマゴわざ
+    pokemon_move['egg_moves'] = extract_egg_moves(page_text, page_name)
+    
+    # 人から教えてもらえるわざ
+    pokemon_move['tutor_moves'] = extract_tutor_moves(page_text, page_name)
+    pokemon_move_root = {}
+    pokemon_move_root[page_name] = pokemon_move
+    return pokemon_move_root
 
 def extract_natural_moves(page_text: str, page_name: str):
     natural_moves_list = {}
