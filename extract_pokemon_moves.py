@@ -20,7 +20,7 @@ def main():
         pprint.pprint(extract_natural_moves(page_text, page_name))
         pprint.pprint(extract_machine_moves(page_text, page_name))
         pprint.pprint(extract_egg_moves(page_text, page_name))
-        # pprint.pprint(extract_tutor_moves(page_text))
+        pprint.pprint(extract_tutor_moves(page_text, page_name))
 
 def extract_natural_moves(page_text: str, page_name: str):
     natural_moves_list = {}
@@ -82,13 +82,23 @@ def extract_egg_moves(page_text: str, page_name: str):
         egg_moves_list[search_result_tuple[0]] = tmp_list
     return egg_moves_list
 
-def extract_tutor_moves(page_text: str):
-    tutor_moves_list = []
+def extract_tutor_moves(page_text: str, page_name: str):
+    tutor_moves_list = {}
     tutor_moves_raw_text = re.search(r"==\s*\[\[わざおしえ人\|人から教えてもらえる\]\]わざ\s*==(.|\s)*?<noinclude>", page_text).group()
-    for row in tutor_moves_raw_text.split("\n"):
-        matched = re.search(r"\{\{learnlist/tutor8\|(.*?)\|", row)
-        if matched != None:
-            tutor_moves_list.append(matched.groups()[0])
+    # 各フォーム抽出のための印 `##` を付与する
+    tutor_moves_raw_text = re.sub(r"\n==", r"\n##==", tutor_moves_raw_text)
+    tutor_moves_raw_text = re.sub(r"<noinclude>", r"##<noinclude>", tutor_moves_raw_text)
+    # 付与した `##` を手掛かりにフォームを抽出する
+    tutor_moves_text_list = re.findall(r"====\s*(.*)?\s*====((.|\s)*?)##", tutor_moves_raw_text)
+    if len(tutor_moves_text_list) == 0:
+        tutor_moves_text_list.append([page_name.replace("/第八世代のおぼえるわざ", ""), tutor_moves_raw_text])
+    for search_result_tuple in tutor_moves_text_list:
+        tmp_list = []
+        for row in search_result_tuple[1].split("\n"):
+            matched = re.search(r"\{\{learnlist/tutor8\|(.*?)\|", row)
+            if matched != None:
+                tmp_list.append(matched.groups()[0])
+        tutor_moves_list[search_result_tuple[0]] = tmp_list
     return tutor_moves_list
 
 if __name__ == '__main__':
