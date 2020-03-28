@@ -16,6 +16,8 @@ def main():
             page_title = page['title']
             print(f"{index} : {page_title}")
 
+        page_title = pages[int(args[2])]['title']
+        print(page_title)
         page_text = pages[int(args[2])]['revision']['text']['#text']
         extract_moves_basic_info(page_text)
 
@@ -50,11 +52,11 @@ def extract_moves_basic_info(page_text):
         'オウム' : r"\|\s*オウム =(.*)\n",
         'オウム6' : r"\|\s*オウム6 =(.*)\n",
         'パレス' : r"\|\s*パレス =(.*)\n",
-        '効果' : r"\|\s*効果 =(.*)\n",
+        '効果' : r"\|\s*効果 =((.|\s)*?)\|(\s|マシン)",
         'Zワザ効果' : r"\|\s*Zワザ効果 =(.*)\n",
         'Zワザ威力' : r"\|\s*Zワザ威力 =(.*)\n",
         'ダイマックスわざ威力' : r"\|\s*ダイマックスわざ威力 =(.*)\n",
-        'マシン' : r"\|\s*マシン =(.*)\n",
+        'マシン' : r"\|\s*マシン\s*=(.*)\n",
         'おしえ' : r"\|\s*おしえ =(.*)\n",
         'アピールタイプ' : r"\|\s*アピールタイプ =(.*)\n",
         'アピールタイプ注' : r"\|\s*アピールタイプ注 =(.*)\n",
@@ -81,25 +83,83 @@ def extract_moves_basic_info(page_text):
 def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
     moves_basic_info = ""
     matched_block = re.search(pattern_str, target_text)
+    print(pattern_name)
     if matched_block :
         # テキスト中のWiki記法や不要な空白を削除する
         # e.g. [[AAA|BBB]]=>BBB
         matched_text = delete_links(matched_block.groups()[0].strip())
-        if "<br />→" in matched_text:
+        # 「効果」の項目は改行を含む場合があるため個別処理で対応する
+        if pattern_name == "効果":
+            if "<br />" in matched_text:
+                tmp_list = matched_text.split("<br />")
+                moves_basic_info = tmp_list
+            elif "\n" in matched_text:
+                tmp_list = matched_text.split("\n")
+                moves_basic_info = delete_list_specifier(tmp_list)
+            else:
+                tmp_list = []
+                tmp_list.append(matched_text)
+                moves_basic_info = tmp_list
+        #「コンボ」または「コンボH2」の項目は<br>で区切られた単純なリストなので個別処理で対応する
+        elif pattern_name == "コンボ" or pattern_name == "コンボH2":
+            if "<br />" in matched_text:
+                tmp_list = matched_text.split("<br />")
+            elif "<br/>" in matched_text:
+                tmp_list = matched_text.split("<br/>")
+            elif "<br>" in matched_text:
+                tmp_list = matched_text.split("<br>")
+            else:
+                tmp_list = []
+                tmp_list.append(matched_text)
+                moves_basic_info = tmp_list                
+            moves_basic_info = tmp_list
+        # その他の項目は改行を含まないので共通で処理する
+        # TODO 処理を共通化する
+        elif "<br>→" in matched_text:
+            tmp_list = matched_text.split("<br>→")
             moves_basic_info = {}
-            tmp_list = matched_text.split("<br />→")
             for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "<br />→" in matched_text:
+            tmp_list = matched_text.split("<br />→")
+            moves_basic_info = {}
+            for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "<br/>→" in matched_text:
+            tmp_list = matched_text.split("<br/>→")
+            moves_basic_info = {}
+            for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "<br>" in matched_text:
+            tmp_list = matched_text.split("<br>")
+            moves_basic_info = {}
+            for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "<br/>" in matched_text:
+            tmp_list = matched_text.split("<br/>")
+            moves_basic_info = {}
+            print(tmp_list)
+            for row in tmp_list:
+                print(row)
                 item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
                 moves_basic_info[item_list[1]] = item_list[0]
         elif "<br />" in matched_text:
             tmp_list = matched_text.split("<br />")
-            if pattern_name == "おしえ":
-                moves_basic_info = {}
-                for row in tmp_list:
-                    item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                    moves_basic_info[item_list[1]] = item_list[0]
+            moves_basic_info = {}
+            for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "(" in matched_text:
+            moves_basic_info = {}
+            item_list = re.search(r"^(.*?)\((.*)\)", matched_text).groups()
+            moves_basic_info[item_list[1]] = item_list[0]
         else:
             moves_basic_info = matched_text
+            
     return moves_basic_info
 
 def delete_links(target_text):
@@ -109,6 +169,12 @@ def delete_links(target_text):
         tmp_text = re.sub(r"\[\[.*?\|", "", item)
         tmp_text = re.sub(r"\[\[", "", tmp_text)
         result = result + tmp_text
+    return result
+
+def delete_list_specifier(target_list):
+    result = []
+    for item in target_list:
+        result.append(re.sub(r"^\*", "", item))
     return result
 
 if __name__ == '__main__':
