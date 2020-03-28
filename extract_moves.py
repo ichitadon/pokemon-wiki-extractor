@@ -82,7 +82,9 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
     moves_basic_info = ""
     matched_block = re.search(pattern_str, target_text)
     if matched_block :
-        matched_text = matched_block.groups()[0].replace('[', '').replace(']', '').strip()
+        # テキスト中のWiki記法や不要な空白を削除する
+        # e.g. [[AAA|BBB]]=>BBB
+        matched_text = delete_links(matched_block.groups()[0].strip())
         if "<br />→" in matched_text:
             moves_basic_info = {}
             tmp_list = matched_text.split("<br />→")
@@ -94,11 +96,20 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
             if pattern_name == "おしえ":
                 moves_basic_info = {}
                 for row in tmp_list:
-                    item_list = re.search(r"^(.*?)\(.*\|(.*)\)", row).groups()
+                    item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
                     moves_basic_info[item_list[1]] = item_list[0]
         else:
             moves_basic_info = matched_text
     return moves_basic_info
+
+def delete_links(target_text):
+    splited_text_list = target_text.split("]]")
+    result = ""
+    for item in splited_text_list:
+        tmp_text = re.sub(r"\[\[.*?\|", "", item)
+        tmp_text = re.sub(r"\[\[", "", tmp_text)
+        result = result + tmp_text
+    return result
 
 if __name__ == '__main__':
     main()
