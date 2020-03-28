@@ -83,15 +83,22 @@ def extract_moves_basic_info(page_text):
 def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
     moves_basic_info = ""
     matched_block = re.search(pattern_str, target_text)
-    print(pattern_name)
     if matched_block :
         # テキスト中のWiki記法や不要な空白を削除する
         # e.g. [[AAA|BBB]]=>BBB
         matched_text = delete_links(matched_block.groups()[0].strip())
+        print(pattern_name)
+        print(matched_text)
         # 「効果」の項目は改行を含む場合があるため個別処理で対応する
         if pattern_name == "効果":
             if "<br />" in matched_text:
                 tmp_list = matched_text.split("<br />")
+                moves_basic_info = tmp_list
+            if "<br/>" in matched_text:
+                tmp_list = matched_text.split("<br/>")
+                moves_basic_info = tmp_list
+            if "<br>" in matched_text:
+                tmp_list = matched_text.split("<br>")
                 moves_basic_info = tmp_list
             elif "\n" in matched_text:
                 tmp_list = matched_text.split("\n")
@@ -115,51 +122,33 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
             moves_basic_info = tmp_list
         # その他の項目は改行を含まないので共通で処理する
         # TODO 処理を共通化する
-        elif "<br>→" in matched_text:
-            tmp_list = matched_text.split("<br>→")
+        elif "(" in matched_text or "<br" in matched_text:
             moves_basic_info = {}
-            for row in tmp_list:
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+            if "<br>→" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br>→", matched_text)
+            elif "<br />→" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br />→", matched_text)
+            elif "<br/>→" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br/>→", matched_text)
+            elif "<br>" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br>", matched_text)
+            elif "<br/>" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br/>", matched_text)
+            elif "<br />" in matched_text:
+                moves_basic_info = extract_moves_basic_info_from_item("<br />", matched_text)
+            elif "(" in matched_text:
+                item_list = re.search(r"^(.*?)\((.*)\)", matched_text).groups()
                 moves_basic_info[item_list[1]] = item_list[0]
-        elif "<br />→" in matched_text:
-            tmp_list = matched_text.split("<br />→")
-            moves_basic_info = {}
-            for row in tmp_list:
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                moves_basic_info[item_list[1]] = item_list[0]
-        elif "<br/>→" in matched_text:
-            tmp_list = matched_text.split("<br/>→")
-            moves_basic_info = {}
-            for row in tmp_list:
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                moves_basic_info[item_list[1]] = item_list[0]
-        elif "<br>" in matched_text:
-            tmp_list = matched_text.split("<br>")
-            moves_basic_info = {}
-            for row in tmp_list:
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                moves_basic_info[item_list[1]] = item_list[0]
-        elif "<br/>" in matched_text:
-            tmp_list = matched_text.split("<br/>")
-            moves_basic_info = {}
-            print(tmp_list)
-            for row in tmp_list:
-                print(row)
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                moves_basic_info[item_list[1]] = item_list[0]
-        elif "<br />" in matched_text:
-            tmp_list = matched_text.split("<br />")
-            moves_basic_info = {}
-            for row in tmp_list:
-                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
-                moves_basic_info[item_list[1]] = item_list[0]
-        elif "(" in matched_text:
-            moves_basic_info = {}
-            item_list = re.search(r"^(.*?)\((.*)\)", matched_text).groups()
-            moves_basic_info[item_list[1]] = item_list[0]
         else:
-            moves_basic_info = matched_text
-            
+            moves_basic_info = matched_text 
+    return moves_basic_info
+
+def extract_moves_basic_info_from_item(pattern :str, target_text :str):
+    tmp_list = target_text.split(pattern)
+    moves_basic_info = {}
+    for row in tmp_list:
+        item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+        moves_basic_info[item_list[1]] = item_list[0]
     return moves_basic_info
 
 def delete_links(target_text):
