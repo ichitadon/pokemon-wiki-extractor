@@ -79,10 +79,25 @@ def extract_moves_basic_info(page_text):
     return moves_basic_info_list
 
 def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
-    moves_basic_info = None
+    moves_basic_info = ""
     matched_block = re.search(pattern_str, target_text)
     if matched_block :
-        moves_basic_info = matched_block.groups()[0].replace('[', '').replace(']', '')
+        matched_text = matched_block.groups()[0].replace('[', '').replace(']', '').strip()
+        if "<br />→" in matched_text:
+            moves_basic_info = {}
+            tmp_list = matched_text.split("<br />→")
+            for row in tmp_list:
+                item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+                moves_basic_info[item_list[1]] = item_list[0]
+        elif "<br />" in matched_text:
+            tmp_list = matched_text.split("<br />")
+            if pattern_name == "おしえ":
+                moves_basic_info = {}
+                for row in tmp_list:
+                    item_list = re.search(r"^(.*?)\(.*\|(.*)\)", row).groups()
+                    moves_basic_info[item_list[1]] = item_list[0]
+        else:
+            moves_basic_info = matched_text
     return moves_basic_info
 
 if __name__ == '__main__':
