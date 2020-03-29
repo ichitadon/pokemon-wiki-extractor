@@ -94,10 +94,10 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
             if "<br />" in matched_text:
                 tmp_list = matched_text.split("<br />")
                 moves_basic_info = tmp_list
-            if "<br/>" in matched_text:
+            elif "<br/>" in matched_text:
                 tmp_list = matched_text.split("<br/>")
                 moves_basic_info = tmp_list
-            if "<br>" in matched_text:
+            elif "<br>" in matched_text:
                 tmp_list = matched_text.split("<br>")
                 moves_basic_info = tmp_list
             elif "\n" in matched_text:
