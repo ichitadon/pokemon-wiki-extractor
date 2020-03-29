@@ -146,7 +146,7 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
     print(tmp_list)
     moves_basic_info = {}
     for row in tmp_list:
-        item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
+        item_list = re.search(r"^(.*?)[\(（](.*)[\)）]", row).groups()
         moves_basic_info[item_list[1]] = item_list[0]
     return moves_basic_info
 
