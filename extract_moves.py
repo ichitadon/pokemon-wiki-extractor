@@ -87,6 +87,8 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
         # テキスト中のWiki記法や不要な空白を削除する
         # e.g. [[AAA|BBB]]=>BBB
         matched_text = delete_links(matched_block.groups()[0].strip())
+        # コメントを削除する
+        matched_text = delete_comments(matched_text)
         print(pattern_name)
         print(matched_text)
         # 「効果」の項目は改行を含む場合があるため個別処理で対応する
@@ -147,6 +149,9 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
         item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
         moves_basic_info[item_list[1]] = item_list[0]
     return moves_basic_info
+
+def delete_comments(target_text):
+    return re.sub(r"<\!\-\-\s*?.*?\s*\-\->", "", target_text)
 
 def delete_links(target_text):
     splited_text_list = target_text.split("]]")
