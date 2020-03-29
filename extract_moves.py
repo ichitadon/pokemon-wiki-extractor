@@ -2,7 +2,7 @@ import xmltodict
 import re
 from pprint import pprint
 import sys
-from pokemon_wiki_extractor_exception import MovesBasicInfoNotFoundError
+from pokemon_wiki_extractor_exception import MovesBasicInfoNotFoundError, MovesDescriptionNotFoundError
 
 def main():
     args = sys.argv
@@ -15,11 +15,50 @@ def main():
         for index, page in enumerate(pages):
             page_title = page['title']
             print(f"{index} : {page_title}")
+            # page_text = page['revision']['text']['#text']
+            # extract_moves_basic_info(page_text)
 
         page_title = pages[int(args[2])]['title']
         print(page_title)
         page_text = pages[int(args[2])]['revision']['text']['#text']
-        extract_moves_basic_info(page_text)
+        moves_basic_info = extract_moves_basic_info(page_text)
+        pprint(moves_basic_info)
+        extract_moves_desctription(page_text)
+
+def extract_moves_desctription(page_text):
+    try:
+        moves_description_raw_text = re.search(r"== たたかうわざ ==(.|\s)*?== ", page_text).group().replace("\u3000", " ")
+    except AttributeError:
+        raise MovesDescriptionNotFoundError
+
+    print(moves_description_raw_text)
+
+    moves_description_dict_kanji = {}
+    moves_description_dict_hiragana = {}
+
+    # バージョン情報の退避先
+    # 1行で複数バージョンが抽出される場合があるため一時保存が必要
+    # ex. ロコン -> 赤・緑、ファイアレッド、Y、ソード
+    version_list = []
+
+    if ";" in moves_description_raw_text:
+        moves_description_signed_text = moves_description_raw_text.replace(";", "##;").replace("\n", "")
+        moves_description_signed_text = re.sub("=== $", "##", moves_description_signed_text)
+
+        moves_description_list = re.findall(r";((.|\s)*?)##", moves_description_signed_text)
+
+        for text in moves_description_list:
+            splited_text_list = delete_links(text[0]).split(":")
+            key = splited_text_list.pop(0)
+            version_list = key.split("・")
+            for version in version_list:
+                for splited_text in splited_text_list:
+                    if "(漢字)" in splited_text:
+                        moves_description_dict_kanji[version.strip()] = splited_text.replace("(漢字)", "").strip()
+                    else:
+                        moves_description_dict_hiragana[version.strip()] = splited_text.strip()
+        pprint(moves_description_dict_kanji)
+        pprint(moves_description_dict_hiragana)
 
 def extract_moves_basic_info(page_text):
     try:
