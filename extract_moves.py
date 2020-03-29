@@ -145,9 +145,20 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
     tmp_list = split_text(r"<br\s?/?>→?", target_text)
     print(tmp_list)
     moves_basic_info = {}
+    canNotMakeDict = False
     for row in tmp_list:
-        item_list = re.search(r"^(.*?)[\(（](.*)[\)）]", row).groups()
-        moves_basic_info[item_list[1]] = item_list[0]
+        matched_item_list = re.search(r"^(.*?)[\(（](.*)[\)）]", row)
+        if matched_item_list != None:
+            item_list = matched_item_list.groups()
+            moves_basic_info[item_list[1]] = item_list[0]
+        else:
+            # TODO: ソーラービームの「威力」の記載の暫定対応
+            # 辞書形式にデータを保持できないのでリストで保持させる
+            # 数が少ないのであれば個別で対応する
+            # e.g. `(ピカブイではXXX)`
+            canNotMakeDict = True
+    if canNotMakeDict:
+        moves_basic_info = tmp_list
     return moves_basic_info
 
 def delete_comments(target_text):
