@@ -73,11 +73,9 @@ def extract_moves_basic_info(page_text):
         'アピール効果H2' : r"\|\s*アピール効果H2 =(.*)\n",
         'コンボH2' : r"\|\s*コンボH2 =(.*)\n",
     }
-    print(moves_basic_info_raw_text)
     moves_basic_info_list = {}
     for pattern_name, pattern_str in moves_basic_info_pattern_dict.items() :
         moves_basic_info_list[pattern_name] = get_moves_basic_info_from_template(pattern_name, pattern_str, moves_basic_info_raw_text)
-    pprint(moves_basic_info_list)
     return moves_basic_info_list
 
 def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
@@ -89,8 +87,6 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
         matched_text = delete_links(matched_block.groups()[0].strip())
         # コメントを削除する
         matched_text = delete_comments(matched_text)
-        print(pattern_name)
-        print(matched_text)
         # 「効果」の項目は改行を含む場合があるため個別処理で対応する
         if pattern_name == "効果":
             if "<br />" in matched_text:
@@ -143,7 +139,6 @@ def split_text(pattern: str, target_text: str):
 
 def extract_moves_basic_info_from_item(pattern :str, target_text :str):
     tmp_list = split_text(r"<br\s?/?>→?", target_text)
-    print(tmp_list)
     moves_basic_info = {}
     canNotMakeDict = False
     for row in tmp_list:
