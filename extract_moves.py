@@ -122,29 +122,26 @@ def get_moves_basic_info_from_template(pattern_name, pattern_str, target_text):
             moves_basic_info = tmp_list
         # その他の項目は改行を含まないので共通で処理する
         # TODO 処理を共通化する
-        elif "(" in matched_text or "<br" in matched_text:
+        elif "<br" in matched_text:
             moves_basic_info = {}
-            if "<br>→" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br>→", matched_text)
-            elif "<br />→" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br />→", matched_text)
-            elif "<br/>→" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br/>→", matched_text)
-            elif "<br>" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br>", matched_text)
-            elif "<br/>" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br/>", matched_text)
-            elif "<br />" in matched_text:
-                moves_basic_info = extract_moves_basic_info_from_item("<br />", matched_text)
-            elif "(" in matched_text:
-                item_list = re.search(r"^(.*?)\((.*)\)", matched_text).groups()
+            moves_basic_info = extract_moves_basic_info_from_item(r"<br\s?/?>→?", matched_text)
+        elif "(" in matched_text:
+            item_list = re.search(r"^(.*?)\((.*)\)", matched_text).groups()
+            if item_list[0] != "":
+                moves_basic_info = {}
                 moves_basic_info[item_list[1]] = item_list[0]
+            else:
+                moves_basic_info = matched_text
         else:
             moves_basic_info = matched_text 
     return moves_basic_info
 
+def split_text(pattern: str, target_text: str):
+    return re.split(pattern, target_text)
+
 def extract_moves_basic_info_from_item(pattern :str, target_text :str):
-    tmp_list = target_text.split(pattern)
+    tmp_list = split_text(r"<br\s?/?>→?", target_text)
+    print(tmp_list)
     moves_basic_info = {}
     for row in tmp_list:
         item_list = re.search(r"^(.*?)\((.*)\)", row).groups()
