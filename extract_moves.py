@@ -82,7 +82,7 @@ def extract_moves_desctription(page_text):
         moves_description_list = re.findall(r"\*\s(.*?)\n", moves_description_raw_text)
 
         for text in moves_description_list:
-            splited_text_list = delete_links(text).split(":")
+            splited_text_list = split_text(r"[:：]",delete_links(text))
             key = splited_text_list[0]
             version_list = key.split("・")
             for version in version_list:
