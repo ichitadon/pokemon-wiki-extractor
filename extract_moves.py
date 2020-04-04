@@ -88,7 +88,7 @@ def extract_moves_desctription(page_text):
             for version in version_list:
                 for splited_text in splited_text_list:
                     if "(漢字)" in splited_text or "(漢字)" in key or has_kanji(splited_text):
-                        moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.strip()
+                        moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.replace("(漢字)", "").strip()
                     else:
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
         pprint(moves_description_dict_kanji)
