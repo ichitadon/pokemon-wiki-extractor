@@ -217,7 +217,12 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
     moves_basic_info = {}
     canNotMakeDict = False
     for row in tmp_list:
-        matched_item_list = re.search(r"^(.*?)[\(（](.*)[\)）]", row)
+        # 無駄なカッコが存在する場合に削除する対応
+        # e.g. メガドレインの「PP」
+        #      10(第三世代まで)\n→15(第四世代以降)\n(10(ピカブイのみ))
+        if re.search(r"^\(.*\)$", row) != None:
+            row = re.sub(r"(^\(|\)$)", "", row)
+        matched_item_list = re.search(r"^(.+?)[\(（](.*)[\)）]", row)
         if matched_item_list != None:
             item_list = matched_item_list.groups()
             moves_basic_info[item_list[1]] = item_list[0]
@@ -233,7 +238,14 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
         tmp_list = [delete_br(target_text)]
     
     if canNotMakeDict:
-        moves_basic_info = tmp_list
+        moves_basic_info = []
+        for row in tmp_list:
+            # 無駄なカッコが存在する場合に削除する対応
+            # e.g. メガドレインの「威力」
+            #      40<br />(75([[ポケットモンスター Let's Go! ピカチュウ・Let's Go! イーブイ|ピカブイ]]のみ))
+            if re.search(r"^\(.*\)$", row) != None:
+                row = re.sub(r"(^\(|\)$)", "", row)
+            moves_basic_info.append(row)
     return moves_basic_info
 
 def has_kanji(target_text):
