@@ -59,6 +59,21 @@ def extract_moves_desctription(page_text):
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
         pprint(moves_description_dict_kanji)
         pprint(moves_description_dict_hiragana)
+    elif "*" in moves_description_raw_text:
+        moves_description_list = re.findall(r"\*\s(.*?)\n", moves_description_raw_text)
+
+        for text in moves_description_list:
+            splited_text_list = delete_links(text).split(":")
+            key = splited_text_list[0]
+            version_list = key.split("・")
+            for version in version_list:
+                for splited_text in splited_text_list:
+                    if "(漢字)" in key:
+                        moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.strip()
+                    else:
+                        moves_description_dict_hiragana[version.strip()] = splited_text.strip()
+        pprint(moves_description_dict_kanji)
+        pprint(moves_description_dict_hiragana)
 
 def extract_moves_basic_info(page_text):
     try:
