@@ -227,6 +227,11 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
             # 数が少ないのであれば個別で対応する
             # e.g. `(ピカブイではXXX)`
             canNotMakeDict = True
+    
+    # コアパニッシャーのわざおしえのための特別処理
+    if target_text == "ジガルデ・コア<br />(ポニのこどう・ハプウの家)":
+        tmp_list = [delete_br(target_text)]
+    
     if canNotMakeDict:
         moves_basic_info = tmp_list
     return moves_basic_info
