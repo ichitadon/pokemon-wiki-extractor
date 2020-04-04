@@ -27,7 +27,11 @@ def main():
 
 def extract_moves_desctription(page_text):
     try:
-        moves_description_raw_text = re.search(r"== たたかうわざ ==(.|\s)*?== ", page_text).group().replace("\u3000", " ")
+        page_text_search_result = re.search(r"== たたかうわざ ==(.|\s)*?== ", page_text)
+        # `たたかうわざ` の見出しが無いパターンは、`説明文` で抽出する。
+        if page_text_search_result == None:
+            page_text_search_result = re.search(r"== 説明文 ==(.|\s)*?== ", page_text)
+        moves_description_raw_text = page_text_search_result.group().replace("\u3000", " ")
     except AttributeError:
         raise MovesDescriptionNotFoundError
 
