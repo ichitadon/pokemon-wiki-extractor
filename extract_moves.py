@@ -69,7 +69,7 @@ def extract_moves_desctription(page_text):
             version_list = key.split("・")
             for version in version_list:
                 for splited_text in splited_text_list:
-                    if "(漢字)" in splited_text or "(漢字)" in key:
+                    if "(漢字)" in splited_text or "(漢字)" in key or has_kanji(splited_text):
                         moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.replace("(漢字)", "").strip()
                     else:
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
@@ -84,7 +84,7 @@ def extract_moves_desctription(page_text):
             version_list = key.split("・")
             for version in version_list:
                 for splited_text in splited_text_list:
-                    if "(漢字)" in splited_text or "(漢字)" in key:
+                    if "(漢字)" in splited_text or "(漢字)" in key or has_kanji(splited_text):
                         moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.strip()
                     else:
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
@@ -225,6 +225,13 @@ def extract_moves_basic_info_from_item(pattern :str, target_text :str):
     if canNotMakeDict:
         moves_basic_info = tmp_list
     return moves_basic_info
+
+def has_kanji(target_text):
+    result = False
+    matcher = re.compile('[\u2E80-\u2FDF\u3005-\u3007\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\U00020000-\U0002EBEF]+')
+    if matcher.search(target_text) != None:
+        result = True
+    return result
 
 def delete_comments(target_text):
     return re.sub(r"<\!\-\-\s*?.*?\s*\-\->", "", target_text)
