@@ -26,12 +26,15 @@ def main():
         extract_moves_desctription(page_text)
 
 def extract_moves_desctription(page_text):
+    # コメントの削除
+    page_text = delete_comments(page_text)
+
     try:
         page_text_search_result = re.search(r"== たたかうわざ ==(.|\s)*?== ", page_text)
         # `たたかうわざ` の見出しが無いパターンは、`説明文` で抽出する。
         if page_text_search_result == None:
             page_text_search_result = re.search(r"== 説明文 ==(.|\s)*?== ", page_text)
-        moves_description_raw_text = delete_comments(page_text_search_result.group().replace("\u3000", " "))
+        moves_description_raw_text = page_text_search_result.group().replace("\u3000", " ")
     except AttributeError:
         raise MovesDescriptionNotFoundError
 
@@ -234,7 +237,7 @@ def has_kanji(target_text):
     return result
 
 def delete_comments(target_text):
-    return re.sub(r"<\!\-\-\s*?.*?\s*\-\->", "", target_text)
+    return re.sub(r"<\!\-\-\s*?(.|\s)*?\s*\-\->", "", target_text)
 
 def delete_links(target_text):
     splited_text_list = target_text.split("]]")
