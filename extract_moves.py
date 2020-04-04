@@ -46,8 +46,20 @@ def extract_moves_desctription(page_text):
     version_list = []
 
     if ";" in moves_description_raw_text:
+        # `;` 区切りでの記法の場合、抽出対象ブロックがわからない
+        # これに対応するために抽出対象ブロックの末尾を示す閉じ記号 `##` を付与する
         moves_description_signed_text = moves_description_raw_text.replace(";", "##;").replace("\n", "")
+        
+        # 末尾の閉じ記号を付与する
         moves_description_signed_text = re.sub("=== $", "##", moves_description_signed_text)
+
+        # 不要な閉じ記号と見出しを削除する
+        moves_description_signed_text = re.sub("=+ (説明文|たたかうわざ) =+##", "", moves_description_signed_text)
+
+        # 第七世代以降は `コンテストわざ` の項目が存在せず、一番最後の末尾の閉じ記号 `##` が付与されない
+        # `##` が1つも存在しないことを判定理由にして `##` を付与する
+        if not "##" in moves_description_signed_text:
+            moves_description_signed_text = re.sub("==", "##", moves_description_signed_text)
 
         moves_description_list = re.findall(r";((.|\s)*?)##", moves_description_signed_text)
 
