@@ -69,8 +69,8 @@ def extract_moves_desctription(page_text):
             version_list = key.split("・")
             for version in version_list:
                 for splited_text in splited_text_list:
-                    if "(漢字)" in splited_text:
-                        moves_description_dict_kanji[version.strip()] = splited_text.replace("(漢字)", "").strip()
+                    if "(漢字)" in splited_text or "(漢字)" in key:
+                        moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.replace("(漢字)", "").strip()
                     else:
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
         pprint(moves_description_dict_kanji)
@@ -84,7 +84,7 @@ def extract_moves_desctription(page_text):
             version_list = key.split("・")
             for version in version_list:
                 for splited_text in splited_text_list:
-                    if "(漢字)" in key:
+                    if "(漢字)" in splited_text or "(漢字)" in key:
                         moves_description_dict_kanji[version.replace("(漢字)", "").strip()] = splited_text.strip()
                     else:
                         moves_description_dict_hiragana[version.strip()] = splited_text.strip()
