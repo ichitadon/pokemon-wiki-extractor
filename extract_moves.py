@@ -51,7 +51,7 @@ def extract_moves_desctription(page_text):
         moves_description_signed_text = moves_description_raw_text.replace(";", "##;").replace("\n", "")
         
         # 末尾の閉じ記号を付与する
-        moves_description_signed_text = re.sub("=== $", "##", moves_description_signed_text)
+        moves_description_signed_text = re.sub(r"=+?\s$", "##", moves_description_signed_text)
 
         # 不要な閉じ記号と見出しを削除する
         moves_description_signed_text = re.sub("=+ (説明文|たたかうわざ) =+##", "", moves_description_signed_text)
